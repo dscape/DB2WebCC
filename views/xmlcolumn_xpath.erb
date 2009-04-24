@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Database> <%= @db.upcase %> </Database>
+  <Table> <%= @table.upcase %> </Table>
+  <Column> <%= @column.upcase %> </Column>
+  <Query>
+    <XPath> <%= @xpath %> </XPath>
+    <DB2Query>  <%= @query %>  </DB2Query>
+  </Query>
+  <Result>
+    <![CDATA[<%= @result_set %>]]>
+  </Result> 
+</Response>
