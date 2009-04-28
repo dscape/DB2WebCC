@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'rack/cache'
 require 'vendor/sinatra/lib/sinatra.rb'
+require 'vendor/amqp/lib/mq'
 require 'sha1'
 
 APP_ENV = :development

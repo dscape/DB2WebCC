@@ -1,3 +1,33 @@
 Start Web-Service (running on port 345)
 ---------------------------------------
 rackup config.ru -p 345
+
+MQ:
+Install RabbitMQ
+
+Configure according to what you want to use in dbconnector.yml
+
+e.g.
+$ rabbitmqctl add_vhost /db2
+Creating vhost "/db2" ...done.
+
+$ rabbitmqctl add_user consumer1 some_password
+Creating user "consumer1" ...done.
+
+$ rabbitmqctl add_user consumer2 some_password
+Creating user "consumer2" ...done.
+
+$ rabbitmqctl add_user consumer3 some_password
+Creating user "consumer3" ...done.
+
+$ rabbitmqctl add_user server1 some_pass
+Creating user "server1" ...done.
+
+$ rabbitmqctl map_user_vhost consumer1 /db2
+Mapping user "consumer1" to vhost "/db2" ...done.
+
+$ rabbitmqctl map_user_vhost consumer2 /db2
+Mapping user "consumer2" to vhost "/db2" ...done.
+
+$ rabbitmqctl map_user_vhost consumer3 /db2
+Mapping user "consumer3" to vhost "/db2" ...done.

@@ -1,10 +1,20 @@
 configure { Etags = {} }
 
 helpers do
-  def run_query query, db=""
-    system "db2 connect to #{db}" unless db.empty?
-    %x(db2 "#{query}").chomp.tap do
-      system "db2 connect reset" unless db.empty?
+  def run_query query, db="_none"
+    # this code is just for testing. need to fix it so it works
+    # defering, its not waiting for response. just a lousy stop to break
+    # need to make sure the right message is delivered. like this we
+    # are just extracting from queue. maybe db.hash(query) for return?
+    AMQP.start(:host => 'localhost') do
+      amq = MQ.new
+      amq.queue(db).publish(query)
+      puts "just published"
+      amq = MQ.new
+      amq.queue(db+"_response").subscribe do |msg|
+        @result_set = msg
+        AMQP.stop{ EM.stop }
+      end
     end
   end
   
@@ -34,8 +44,8 @@ end
 get "/" do
   set_headers :cache => {:max_age => 60, :etag => true}
   r      = /(Database alias)(\s+)?=(\s+)?(\w+)/
-  @query = "list database directory"
-  @dbs   = run_query(@query).split("\r\n").select { |s| r.match(s) }.map { |s| s.gsub(r,'\4') }
+  run_query (@query = "list database directory")
+  @dbs = @result_set.split("\r\n").select { |s| r.match(s) }.map { |s| s.gsub(r,'\4') }
   render_view "list_dbs"
 end
 
@@ -44,17 +54,17 @@ post "/" do
   unless params[:name].nil?
     set_headers :purge_cache => true
     @query = "create database #{params[:name]} using codeset utf-8 territory US"
-    @result_set = run_query(@query)
+    run_query(@query)
     render_view "basic_response"
   end
 end
 
 # /:database/:table/:column/:xpath
 get "/:db/:table/:column/*" do |db, table, column, xpath|
-  set_headers :cache => {:max_age => 60}
+  #set_headers :cache => {:max_age => 60}
   @db, @table, @column = db, table.upcase, column.upcase
   @xpath = if xpath.empty? then "" else ("/" + xpath).gsub("/", "/*:") end
   @query = "XQuery db2-fn:xmlcolumn('#{@table}.#{@column}')#{@xpath}"
-  @result_set = run_query(@query, @db)
+  run_query(@query, @db)
   render_view "xmlcolumn"
 end
