@@ -9,7 +9,6 @@ helpers do
     AMQP.start(:host => 'localhost') do
       amq = MQ.new
       amq.queue(db).publish(query)
-      puts "just published"
       amq = MQ.new
       amq.queue(db+"_response").subscribe do |msg|
         @result_set = msg
@@ -61,7 +60,7 @@ end
 
 # /:database/:table/:column/:xpath
 get "/:db/:table/:column/*" do |db, table, column, xpath|
-  #set_headers :cache => {:max_age => 60}
+  set_headers :cache => {:max_age => 10}
   @db, @table, @column = db, table.upcase, column.upcase
   @xpath = if xpath.empty? then "" else ("/" + xpath).gsub("/", "/*:") end
   @query = "XQuery db2-fn:xmlcolumn('#{@table}.#{@column}')#{@xpath}"
